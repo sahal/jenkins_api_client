@@ -655,14 +655,14 @@ module JenkinsApi
         @logger.info "Obtaining jobs matching filter '#{filter}'"
         response_json = @client.api_get_request("")
         jobs = []
-				found_jobs = list_all_jobs(response_json["jobs"])
-        found_jobs.each do |job|
-						if ignorecase
-							jobs << job["name"] if job["name"] =~ /#{filter}/i
-						else
-							jobs << job["name"] if job["name"] =~ /#{filter}/
-						end
-					end
+        found_jobs = list_all_jobs(response_json["jobs"])
+          found_jobs.each do |job|
+            if ignorecase
+              jobs << job["name"] if job["name"] =~ /#{filter}/i
+            else
+              jobs << job["name"] if job["name"] =~ /#{filter}/
+            end
+          end
         end
         jobs
       end
@@ -672,21 +672,21 @@ module JenkinsApi
         @logger.info "Obtaining all jobs inside folders..."
         found_jobs = []
         response_json["jobs"].each do |job|
-					name = job['name']
-					if folder_path
-						# add folder path to job name
-						name = "#{folder_path}/#{job['name']}"
-						job['name'] = name
-					end
+          name = job['name']
+          if folder_path
+            # add folder path to job name
+            name = "#{folder_path}/#{job['name']}"
+            job['name'] = name
+          end
 
-					found_jobs << job
+          found_jobs << job
 
-					if job['_class'] == 'com.cloudbees.hudson.plugins.folder.Folder'
-							# mangle "folder" path into "API" path
-							api_path = '/job/' + name.split('/').join('/job/')
-							folder = @client.api_get_request(api_path, "tree=jobs[name]")["jobs"]
-							found_jobs += find_jobs(folder, name)
-					end
+          if job['_class'] == 'com.cloudbees.hudson.plugins.folder.Folder'
+            # mangle "folder" path into "API" path
+            api_path = '/job/' + name.split('/').join('/job/')
+            folder = @client.api_get_request(api_path, "tree=jobs[name]")["jobs"]
+            found_jobs += find_jobs(folder, name)
+          end
         end
         found_jobs
       end
