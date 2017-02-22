@@ -617,7 +617,14 @@ module JenkinsApi
       # @return [Boolean] whether the job exists in jenkins or not
       #
       def exists?(job_name)
-        list(job_name).include?(job_name)
+        value = true
+        begin 
+          @client.api_get_request(job_name)
+        rescue
+          @logger.info "Could not find job_name"
+          value = false
+        end
+        value
       end
 
       # List all Jobs matching the given status
