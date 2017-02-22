@@ -653,15 +653,15 @@ module JenkinsApi
       #
       def list(filter, ignorecase = true)
         @logger.info "Obtaining jobs matching filter '#{filter}'"
-        response_json = @client.api_get_request("")
+        #response_json = @client.api_get_request("")
+        response_json = @client.api_get_request("", "tree=jobs[name]")["jobs"]
         jobs = []
-        found_jobs = list_all_jobs(response_json["jobs"])
-          found_jobs.each do |job|
-            if ignorecase
-              jobs << job["name"] if job["name"] =~ /#{filter}/i
-            else
-              jobs << job["name"] if job["name"] =~ /#{filter}/
-            end
+        found_jobs = list_all_jobs(response_json)
+        found_jobs.each do |job|
+          if ignorecase
+            jobs << job["name"] if job["name"] =~ /#{filter}/i
+          else
+            jobs << job["name"] if job["name"] =~ /#{filter}/
           end
         end
         jobs
@@ -671,7 +671,7 @@ module JenkinsApi
       def list_all_jobs(jobs, folder_path = nil)
         @logger.info "Obtaining all jobs inside folders..."
         found_jobs = []
-        response_json["jobs"].each do |job|
+        jobs.each do |job|
           name = job['name']
           if folder_path
             # add folder path to job name
@@ -685,7 +685,8 @@ module JenkinsApi
             # mangle "folder" path into "API" path
             api_path = '/job/' + name.split('/').join('/job/')
             folder = @client.api_get_request(api_path, "tree=jobs[name]")["jobs"]
-            found_jobs += find_jobs(folder, name)
+            found_jobs += list_all_jobs(folder, name)
+            @logger.info found_jobs
           end
         end
         found_jobs
